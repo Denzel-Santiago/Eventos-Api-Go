@@ -10,7 +10,7 @@ import (
 
 // ConnectRabbitMQ establece la conexión con RabbitMQ
 func ConnectRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
-	conn, err := amqp.Dial("amqp://Denzel:Desz117s@54.164.136.172:5672/")
+	conn, err := amqp.Dial("amqp://Denzel:Desz117s@18.211.110.229:5672/")
 	if err != nil {
 		log.Fatalf("Error conectando a RabbitMQ: %s", err)
 		return nil, nil, err

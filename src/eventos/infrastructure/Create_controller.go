@@ -1,34 +1,46 @@
 package infrastructure
 
 import (
+	"net/http"
+
 	"Eventos-Api/src/eventos/application"
 	"Eventos-Api/src/eventos/domain/entities"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
-// EventosController maneja las solicitudes HTTP para los eventos.
-type EventosController struct {
-	createEventoUseCase *application.CreateEventosUseCase
+type CreateEventController struct {
+	CreateEventUseCase *application.CreateEventUseCase
 }
 
-// NewEventosController crea una nueva instancia de EventosController.
-func NewEventosController(createEventoUseCase *application.CreateEventosUseCase) *EventosController {
-	return &EventosController{createEventoUseCase: createEventoUseCase}
+func NewCreateEventController(createEventUseCase *application.CreateEventUseCase) *CreateEventController {
+	return &CreateEventController{
+		CreateEventUseCase: createEventUseCase,
+	}
 }
 
-// CreateEvento maneja la solicitud para crear un nuevo evento.
-func (c *EventosController) CreateEvento(ctx *gin.Context) {
-	var evento entities.Evento
-	if err := ctx.ShouldBindJSON(&evento); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func (ctrl *CreateEventController) Run(c *gin.Context) {
+	var event entities.Event
+
+	if errJSON := c.ShouldBindJSON(&event); errJSON != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Datos del evento inválidos",
+			"error":   errJSON.Error(),
+		})
 		return
 	}
 
-	if err := c.createEventoUseCase.Execute(evento); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	eventoCreado, errAdd := ctrl.CreateEventUseCase.Run(&event)
+
+	if errAdd != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Error al agregar el evento",
+			"error":   errAdd.Error(),
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Evento created successfully"})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "El evento ha sido agregado",
+		"evento":  eventoCreado,
+	})
 }

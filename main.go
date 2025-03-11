@@ -1,48 +1,24 @@
 package main
 
 import (
-	"Eventos-Api/src/eventos/infrastructure"
-	"Eventos-Api/src/eventos/infrastructure/routes"
-	"log"
+	"fmt"
 
+	"Eventos-Api/src/core"
+	eventosRut "Eventos-Api/src/eventos/infrastructure/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Configura las dependencias
-	deps, err := infrastructure.SetupDependencies()
-	if err != nil {
-		log.Fatalf("Failed to setup dependencies: %v", err)
-	}
 
-	// Conectar a RabbitMQ y enviar un mensaje de prueba
-	conn, ch, err := infrastructure.ConnectRabbitMQ()
-	if err != nil {
-		log.Fatalf("Error al conectar con RabbitMQ: %v", err)
-	}
-	defer conn.Close()
-	defer ch.Close()
+	core.InitDB()
 
-	// Verificar que la cola 'queue' existe
-	_, err = infrastructure.DeclareQueue(ch, "queue")
-	if err != nil {
-		log.Fatalf("Error al declarar la cola: %v", err)
-	}
-
-	// Enviar mensaje de prueba
-	err = infrastructure.PublishTestMessage(ch, "queue")
-	if err != nil {
-		log.Fatalf("Error al enviar mensaje de prueba: %v", err)
-	}
-
-	// Inicializa el router de Gin
 	r := gin.Default()
 
-	// Configura las rutas pasando el handler de eventos
-	routes.SetupEventosRoutes(r, deps.EventosHandler)
+	eventosRouter := eventosRut.NewRouter(r)
+	eventosRouter.Run()
 
-	// Inicia el servidor
-	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("Failed to run server: %v", err)
+	err := r.Run(":8000")
+	if err != nil {
+		fmt.Println("Error al iniciar el servidor:", err)
 	}
 }

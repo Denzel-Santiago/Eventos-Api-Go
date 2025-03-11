@@ -1,41 +1,34 @@
 package infrastructure
 
 import (
-	"Eventos-Api/src/core"
 	"Eventos-Api/src/eventos/application"
-	"Eventos-Api/src/eventos/domain"
 )
 
-// Dependencies contiene todas las dependencias necesarias para la aplicación.
-type Dependencies struct {
-	DB                  *core.DB
-	EventoRepository    domain.EventoRepository
-	CreateEventoUseCase *application.CreateEventosUseCase
-	EventosHandler      *application.EventosHandler
-}
+func InitEventDependencies() (
+	*CreateEventController,
+	*ViewEventController,
+	*UpdateEventController,
+	*DeleteEventController,
+	*ViewAllEventsController,
+	*GetEventsByDateController,
+) {
 
-// SetupDependencies configura y devuelve las dependencias de la aplicación.
-func SetupDependencies() (*Dependencies, error) {
-	// Configura la conexión a la base de datos
-	db, err := core.NewDB()
-	if err != nil {
-		return nil, err
-	}
+	repo := NewMysqlEventRepository()
 
-	// Inicializa el repositorio de eventos
-	eventoRepo := domain.NewEventoRepository(db.DB) // Pasamos db.DB (el *sql.DB subyacente)
+	createUseCase := application.NewCreateEventUseCase(repo)
+	viewUseCase := application.NewViewEvent(repo)
+	updateUseCase := application.NewUpdateEvent(repo)
+	deleteUseCase := application.NewDeleteEventUseCase(repo)
+	viewAllUseCase := application.NewViewAllEvents(repo)
+	getEventsByDate := application.NewGetEventsByDateUseCase(repo)
 
-	// Inicializa el caso de uso para crear eventos
-	createEventoUseCase := application.NewCreateEventosUseCase(eventoRepo)
+	// Crear controladores
+	createController := NewCreateEventController(createUseCase)
+	viewController := NewViewEventController(viewUseCase)
+	updateController := NewUpdateEventController(updateUseCase)
+	deleteController := NewDeleteEventController(deleteUseCase)
+	viewAllController := NewViewAllEventsController(viewAllUseCase)
+	getEventsByDateController := NewGetEventsByDateController(getEventsByDate)
 
-	// Inicializa el handler de eventos
-	eventosHandler := application.NewEventosHandler(createEventoUseCase)
-
-	// Retorna las dependencias configuradas
-	return &Dependencies{
-		DB:                  db,
-		EventoRepository:    eventoRepo,
-		CreateEventoUseCase: createEventoUseCase,
-		EventosHandler:      eventosHandler,
-	}, nil
+	return createController, viewController, updateController, deleteController, viewAllController, getEventsByDateController
 }
