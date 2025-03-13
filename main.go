@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"Eventos-Api/src/core"
-	"Eventos-Api/src/eventos/infrastructure" // ✅ Importar el paquete para RabbitMQ
 	eventosRut "Eventos-Api/src/eventos/infrastructure/routes"
 	"github.com/gin-gonic/gin"
 )
@@ -12,14 +11,18 @@ import (
 func main() {
 	core.InitDB()
 
-	// ✅ Iniciar las dependencias, incluidas las de RabbitMQ
-	infrastructure.InitEventDependencies()
-
 	r := gin.Default()
 
+	// ✅ Registrar Middleware CORS
+	r.Use(core.CORSMiddleware())
+
+	// ✅ Configurar las rutas de eventos
 	eventosRouter := eventosRut.NewRouter(r)
 	eventosRouter.Run()
 
+	fmt.Println("¡API en Funcionamiento :D!")
+
+	// ✅ Iniciar el servidor
 	err := r.Run(":8000")
 	if err != nil {
 		fmt.Println("Error al iniciar el servidor:", err)

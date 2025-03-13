@@ -1,7 +1,7 @@
 package routesevents
 
 import (
-	"Eventos-Api/src/eventos/infrastructure" // Importamos la infraestructura de eventos
+	"Eventos-Api/src/eventos/infrastructure"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,22 +22,27 @@ func (router *Router) Run() {
 	// Grupo de rutas para eventos
 	eventGroup := router.engine.Group("/events")
 	{
-		// Crear un evento
+		// ✅ Crear un evento
 		eventGroup.POST("/", createController.Run)
 
-		// Obtener un evento por ID
+		// ✅ Obtener un evento por ID
 		eventGroup.GET("/:id", viewController.Execute)
 
-		// Actualizar un evento por ID
+		// ✅ Actualizar un evento por ID
 		eventGroup.PUT("/:id", updateController.Execute)
 
-		// Eliminar un evento por ID
+		// ✅ Eliminar un evento por ID
 		eventGroup.DELETE("/:id", deleteController.Run)
 
-		// Obtener todos los eventos
+		// ✅ Obtener todos los eventos
 		eventGroup.GET("/", viewAllController.Execute)
 
-		// Obtener eventos por fecha
+		// ✅ Obtener eventos por fecha
 		eventGroup.GET("/date/:date", getEventsByDateController.Run)
+
+		// ✅ Añadir manejador OPTIONS para preflight requests
+		eventGroup.OPTIONS("/*any", func(c *gin.Context) {
+			c.Status(204) // Responder con No Content
+		})
 	}
 }
