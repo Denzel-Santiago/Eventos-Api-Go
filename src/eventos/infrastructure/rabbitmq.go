@@ -8,6 +8,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// TicketPurchaseMessage representa el mensaje que se enviará a la cola
+type TicketPurchaseMessage struct {
+	EventID     string `json:"event_id"`
+	TicketsSold int    `json:"tickets_sold"`
+}
+
 // ConnectRabbitMQ establece la conexión con RabbitMQ
 func ConnectRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
 	conn, err := amqp.Dial("amqp://Denzel:Desz117s@18.211.110.229:5672/")
@@ -46,12 +52,11 @@ func DeclareQueue(ch *amqp.Channel, queueName string) (amqp.Queue, error) {
 	return q, nil
 }
 
-// PublishTestMessage envía un mensaje de prueba a la cola
-func PublishTestMessage(ch *amqp.Channel, queueName string) error {
-	message := map[string]string{
-		"id":      "1",
-		"evento":  "Prueba de RabbitMQ",
-		"detalle": "Este es un mensaje de prueba",
+// PublishTicketPurchaseMessage envía un mensaje con la compra de boletos
+func PublishTicketPurchaseMessage(ch *amqp.Channel, queueName string, eventID string, ticketsSold int) error {
+	message := TicketPurchaseMessage{
+		EventID:     eventID,
+		TicketsSold: ticketsSold,
 	}
 
 	body, err := json.Marshal(message)

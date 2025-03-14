@@ -38,14 +38,6 @@ func InitEventDependencies() (
 		log.Fatalf("❌ Error al declarar la cola: %v", err)
 	}
 
-	// ✅ Enviar mensaje de prueba (opcional para confirmar la conexión)
-	err = PublishTestMessage(ch, queueName)
-	if err != nil {
-		log.Fatalf("❌ Error al enviar mensaje de prueba: %v", err)
-	}
-
-	log.Println("✅ RabbitMQ conectado correctamente y cola configurada")
-
 	// Crear controladores
 	createController := NewCreateEventController(createUseCase)
 	viewController := NewViewEventController(viewUseCase)
