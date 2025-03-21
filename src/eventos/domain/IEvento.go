@@ -1,3 +1,4 @@
+// Eventos-Api-Go/src/eventos/domain/IEvento.go
 package domain
 
 import (
@@ -11,4 +12,6 @@ type IEvent interface {
 	FindByID(id int) (entities.Event, error)
 	GetAll() ([]entities.Event, error)
 	GetByDate(date string) ([]entities.Event, error)
+	FindByLocation(location string) ([]entities.Event, error)
 }
+

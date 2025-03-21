@@ -1,7 +1,10 @@
+// Eventos-Api-Go/src/eventos/infrastructure/routes/eventos_routes.go
 package routesevents
 
 import (
 	"Eventos-Api/src/eventos/infrastructure"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +20,7 @@ func NewRouter(engine *gin.Engine) *Router {
 
 func (router *Router) Run() {
 	// Inicializamos las dependencias de eventos
-	createController, viewController, updateController, deleteController, viewAllController, getEventsByDateController := infrastructure.InitEventDependencies()
+	createController, updateController, deleteController, viewAllController, getEventsByDateController := infrastructure.InitEventDependencies()
 
 	// Grupo de rutas para eventos
 	eventGroup := router.engine.Group("/events")
@@ -25,8 +28,7 @@ func (router *Router) Run() {
 		// ✅ Crear un evento
 		eventGroup.POST("/", createController.Run)
 
-		// ✅ Obtener un evento por ID
-		eventGroup.GET("/:id", viewController.Execute)
+
 
 		// ✅ Actualizar un evento por ID
 		eventGroup.PUT("/:id", updateController.Execute)
@@ -45,4 +47,58 @@ func (router *Router) Run() {
 			c.Status(204) // Responder con No Content
 		})
 	}
+
+	eventGroup.POST("/purchase", func(c *gin.Context) {
+		var message map[string]interface{} // 🔹 Recibe JSON dinámico
+	
+		if err := c.ShouldBindJSON(&message); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	
+		conn, ch, err := infrastructure.ConnectRabbitMQ()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error conectando a RabbitMQ"})
+			return
+		}
+		defer conn.Close()
+		defer ch.Close()
+	
+		err = infrastructure.PublishTicketPurchaseMessage(ch, message) // ✅ Corrección aquí
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error enviando mensaje a la cola"})
+			return
+		}
+	
+		c.JSON(http.StatusOK, gin.H{"message": "Compra procesada y mensaje enviado a RabbitMQ correctamente"})
+	})
+	
+
+	eventGroup.POST("/queue", func(c *gin.Context) {
+		var message map[string]interface{} // 🔹 Cambiar tipo de datos
+	
+		if err := c.ShouldBindJSON(&message); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	
+		conn, ch, err := infrastructure.ConnectRabbitMQ()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error conectando a RabbitMQ"})
+			return
+		}
+		defer conn.Close()
+		defer ch.Close()
+	
+		// ✅ Enviar el mensaje completo
+		err = infrastructure.PublishTicketPurchaseMessage(ch, message)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error enviando mensaje a la cola"})
+			return
+		}
+	
+		c.JSON(http.StatusOK, gin.H{"message": "Mensaje enviado a RabbitMQ correctamente"})
+	})
+	
+	
 }

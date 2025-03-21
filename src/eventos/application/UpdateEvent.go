@@ -1,3 +1,4 @@
+//Eventos-Api-Go/src/eventos/application/UpdateEvent.go
 package application
 
 import (
@@ -6,13 +7,13 @@ import (
 )
 
 type UpdateEvent struct {
-	db domain.IEvent
+	Db domain.IEvent
 }
 
 func NewUpdateEvent(db domain.IEvent) *UpdateEvent {
-	return &UpdateEvent{db: db}
+	return &UpdateEvent{Db: db}
 }
 
 func (ue *UpdateEvent) Execute(id int, event entities.Event) error {
-	return ue.db.Update(id, event)
+	return ue.Db.Update(id, event)
 }

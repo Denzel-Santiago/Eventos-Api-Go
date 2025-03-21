@@ -1,3 +1,4 @@
+// Eventos-Api-Go/src/eventos/infrastructure/mysql_event_repository.go
 package infrastructure
 
 import (
@@ -12,6 +13,11 @@ import (
 
 type MysqlEventRepository struct {
 	conn *sql.DB
+}
+
+// FindByLocation implements domain.IEvent.
+func (mysql *MysqlEventRepository) FindByLocation(location string) ([]entities.Event, error) {
+	panic("unimplemented")
 }
 
 func NewMysqlEventRepository() domain.IEvent {
@@ -109,7 +115,7 @@ func (mysql *MysqlEventRepository) FindByID(id int) (entities.Event, error) {
 func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 	var events []entities.Event
 
-	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, created_at FROM events")
+	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events")
 	if err != nil {
 		log.Println("Error al obtener todos los eventos:", err)
 		return nil, err

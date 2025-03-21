@@ -52,33 +52,30 @@ func DeclareQueue(ch *amqp.Channel, queueName string) (amqp.Queue, error) {
 	return q, nil
 }
 
-// PublishTicketPurchaseMessage envía un mensaje con la compra de boletos
-func PublishTicketPurchaseMessage(ch *amqp.Channel, queueName string, eventID string, ticketsSold int) error {
-	message := TicketPurchaseMessage{
-		EventID:     eventID,
-		TicketsSold: ticketsSold,
-	}
 
-	body, err := json.Marshal(message)
-	if err != nil {
-		return fmt.Errorf("error convirtiendo mensaje a JSON: %v", err)
-	}
+func PublishTicketPurchaseMessage(ch *amqp.Channel, message map[string]interface{}) error {
+    queueName := "queue"
 
-	err = ch.Publish(
-		"",        // Exchange ("" significa que va directo a la cola)
-		queueName, // Routing key (nombre de la cola)
-		false,     // Mandatory
-		false,     // Immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	)
+    body, err := json.Marshal(message)  // Convertir el JSON dinámico a string
+    if err != nil {
+        return fmt.Errorf("error convirtiendo mensaje a JSON: %v", err)
+    }
 
-	if err != nil {
-		return fmt.Errorf("error enviando mensaje a RabbitMQ: %v", err)
-	}
+    err = ch.Publish(
+        "",        // Intercambio vacío
+        queueName, // Nombre de la cola
+        false,
+        false,
+        amqp.Publishing{
+            ContentType: "application/json",
+            Body:        body,
+        },
+    )
 
-	fmt.Printf("📩 Mensaje enviado a la cola '%s': %s\n", queueName, body)
-	return nil
+    if err != nil {
+        return fmt.Errorf("error enviando mensaje a RabbitMQ: %v", err)
+    }
+
+    fmt.Printf("📩 Mensaje enviado a la cola '%s': %s\n", queueName, body)
+    return nil
 }
