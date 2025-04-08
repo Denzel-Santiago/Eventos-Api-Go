@@ -36,11 +36,11 @@ func ConnectRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
 func DeclareQueue(ch *amqp.Channel, queueName string) (amqp.Queue, error) {
 	q, err := ch.QueueDeclare(
 		queueName,
-		true,  // Durable
-		false, // Auto-delete
-		false, // Exclusive
-		false, // No-wait
-		nil,   // Arguments
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 
 	if err != nil {
@@ -52,30 +52,29 @@ func DeclareQueue(ch *amqp.Channel, queueName string) (amqp.Queue, error) {
 	return q, nil
 }
 
-
 func PublishTicketPurchaseMessage(ch *amqp.Channel, message map[string]interface{}) error {
-    queueName := "queue"
+	queueName := "queue"
 
-    body, err := json.Marshal(message)  // Convertir el JSON dinámico a string
-    if err != nil {
-        return fmt.Errorf("error convirtiendo mensaje a JSON: %v", err)
-    }
+	body, err := json.Marshal(message) // Convertir el JSON dinámico a string
+	if err != nil {
+		return fmt.Errorf("error convirtiendo mensaje a JSON: %v", err)
+	}
 
-    err = ch.Publish(
-        "",        // Intercambio vacío
-        queueName, // Nombre de la cola
-        false,
-        false,
-        amqp.Publishing{
-            ContentType: "application/json",
-            Body:        body,
-        },
-    )
+	err = ch.Publish(
+		"",
+		queueName,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
 
-    if err != nil {
-        return fmt.Errorf("error enviando mensaje a RabbitMQ: %v", err)
-    }
+	if err != nil {
+		return fmt.Errorf("error enviando mensaje a RabbitMQ: %v", err)
+	}
 
-    fmt.Printf("📩 Mensaje enviado a la cola '%s': %s\n", queueName, body)
-    return nil
+	fmt.Printf("📩 Mensaje enviado a la cola '%s': %s\n", queueName, body)
+	return nil
 }
