@@ -9,7 +9,7 @@ type Event struct {
 	ID               int       `json:"id"`
 	Name             string    `json:"name"`
 	Location         string    `json:"location"`
-	Date             time.Time `json:"date"` // Usamos time.Time para manejar fechas
+	Date             time.Time `json:"date"`
 	AvailableTickets int       `json:"available_tickets"`
 	Price            float64   `json:"price"`
 	CreatedAt        time.Time `json:"created_at"`
@@ -23,9 +23,10 @@ func NewEvent(name, location string, date time.Time, availableTickets int, price
 		Date:             date,
 		AvailableTickets: availableTickets,
 		Price:            price,
-		CreatedAt:        time.Now(), // Asignamos la fecha actual como valor por defecto
+		CreatedAt:        time.Now(),
 	}
 }
+
 
 // Métodos Getters y Setters
 func (e *Event) GetID() int {

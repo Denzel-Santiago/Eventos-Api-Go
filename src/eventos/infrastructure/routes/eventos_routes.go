@@ -74,31 +74,6 @@ func (router *Router) Run() {
 	})
 	
 
-	eventGroup.POST("/queue", func(c *gin.Context) {
-		var message map[string]interface{} // 🔹 Cambiar tipo de datos
-	
-		if err := c.ShouldBindJSON(&message); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-	
-		conn, ch, err := infrastructure.ConnectRabbitMQ()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error conectando a RabbitMQ"})
-			return
-		}
-		defer conn.Close()
-		defer ch.Close()
-	
-		// ✅ Enviar el mensaje completo
-		err = infrastructure.PublishTicketPurchaseMessage(ch, message)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error enviando mensaje a la cola"})
-			return
-		}
-	
-		c.JSON(http.StatusOK, gin.H{"message": "Mensaje enviado a RabbitMQ correctamente"})
-	})
-	
+
 	
 }

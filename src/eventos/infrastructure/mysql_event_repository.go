@@ -88,34 +88,32 @@ func (mysql *MysqlEventRepository) Delete(id int) error {
 }
 
 func (mysql *MysqlEventRepository) FindByID(id int) (entities.Event, error) {
-	var event entities.Event
-	row := mysql.conn.QueryRow("SELECT id, name, location, date, available_tickets, price, created_at FROM events WHERE id = ?", id)
+    var event entities.Event
+    row := mysql.conn.QueryRow("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events WHERE id = ?", id)
 
-	err := row.Scan(
-		&event.ID,
-		&event.Name,
-		&event.Location,
-		&event.Date,
-		&event.AvailableTickets,
-		&event.Price,
-		&event.CreatedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Println("Evento no encontrado:", err)
-			return entities.Event{}, fmt.Errorf("evento con ID %d no encontrado", id)
-		}
-		log.Println("Error al buscar el evento por ID:", err)
-		return entities.Event{}, err
-	}
+    err := row.Scan(
+        &event.ID,
+        &event.Name,
+        &event.Location,
+        &event.Date,
+        &event.AvailableTickets,
+        &event.Price,
+        &event.CreatedAt, // ¡Este faltaba!
+    )
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return entities.Event{}, fmt.Errorf("evento con ID %d no encontrado", id)
+        }
+        return entities.Event{}, err
+    }
 
-	return event, nil
+    return event, nil
 }
-
 func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 	var events []entities.Event
 
 	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events")
+
 	if err != nil {
 		log.Println("Error al obtener todos los eventos:", err)
 		return nil, err
@@ -150,8 +148,7 @@ func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 
 func (mysql *MysqlEventRepository) GetByDate(date string) ([]entities.Event, error) {
 	var events []entities.Event
-
-	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, created_at FROM events WHERE date = ?", date)
+	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events WHERE date = ?", date)
 	if err != nil {
 		log.Println("Error al obtener eventos por fecha:", err)
 		return nil, err
