@@ -122,6 +122,27 @@ func (r *MySQLUserRepository) GetAll() ([]entities.User, error) {
 	return users, nil
 }
 
+func (r *MySQLUserRepository) GetAllBasic() ([]domain.UserBasic, error) {
+    query := "SELECT id, username, email FROM users ORDER BY username"
+    rows, err := r.db.Query(query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var users []domain.UserBasic
+    for rows.Next() {
+        var user domain.UserBasic
+        err := rows.Scan(&user.ID, &user.Username, &user.Email)
+        if err != nil {
+            return nil, err
+        }
+        users = append(users, user)
+    }
+    
+    return users, nil
+}
+
 func (r *MySQLUserRepository) Authenticate(username, password string) (entities.User, error) {
 	// Buscar por username
 	user, err := r.FindByUsername(username)
