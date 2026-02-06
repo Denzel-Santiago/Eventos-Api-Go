@@ -1,4 +1,4 @@
-//Eventos-Api-Go/src/eventos/application/CreateEvents_UseCase.go
+// Eventos-Api-Go/src/eventos/application/CreateEvents_UseCase.go
 package application
 
 import (
@@ -7,16 +7,16 @@ import (
 )
 
 type CreateEventUseCase struct {
-	db domain.IEvent
+	eventRepo domain.IEvent
 }
 
-func NewCreateEventUseCase(db domain.IEvent) *CreateEventUseCase {
+func NewCreateEventUseCase(eventRepo domain.IEvent) *CreateEventUseCase {
 	return &CreateEventUseCase{
-		db: db,
+		eventRepo: eventRepo,
 	}
 }
 
-func (uc *CreateEventUseCase) Run(event *entities.Event) (*entities.Event, error) {
-	err := uc.db.Save(*event)
-	return event, err
+func (uc *CreateEventUseCase) Run(event entities.Event) (entities.Event, error) {
+	
+	return uc.eventRepo.Save(event)
 }

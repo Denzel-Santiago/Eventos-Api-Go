@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"Eventos-Api/src/core"
 	"Eventos-Api/src/eventos/domain"
@@ -15,38 +16,33 @@ type MysqlEventRepository struct {
 	conn *sql.DB
 }
 
-// FindByLocation implements domain.IEvent.
-func (mysql *MysqlEventRepository) FindByLocation(location string) ([]entities.Event, error) {
-	panic("unimplemented")
-}
-
 func NewMysqlEventRepository() domain.IEvent {
 	conn := core.GetDB()
 	return &MysqlEventRepository{conn: conn}
 }
 
-func (mysql *MysqlEventRepository) Save(event entities.Event) error {
+func (mysql *MysqlEventRepository) Save(event entities.Event) (entities.Event, error) {
 	result, err := mysql.conn.Exec(
 		"INSERT INTO events (name, location, date, available_tickets, price) VALUES (?, ?, ?, ?, ?)",
 		event.Name,
 		event.Location,
-		event.Date,
+		event.Date.Format("2006-01-02"),
 		event.AvailableTickets,
 		event.Price,
 	)
 	if err != nil {
 		log.Println("Error al guardar el evento:", err)
-		return err
+		return event, err // ✅ Retorna el evento (aunque tenga error)
 	}
 
 	idInserted, err := result.LastInsertId()
 	if err != nil {
 		log.Println("Error al obtener el ID insertado:", err)
-		return err
+		return event, err // ✅ Retorna el evento (aunque tenga error)
 	}
 
-	event.SetID(int(idInserted))
-	return nil
+	event.ID = int(idInserted)
+	return event, nil // ✅ Ahora retorna el evento con el ID actualizado
 }
 
 func (mysql *MysqlEventRepository) Update(id int, event entities.Event) error {
@@ -54,7 +50,7 @@ func (mysql *MysqlEventRepository) Update(id int, event entities.Event) error {
 		"UPDATE events SET name = ?, location = ?, date = ?, available_tickets = ?, price = ? WHERE id = ?",
 		event.Name,
 		event.Location,
-		event.Date,
+		event.Date.Format("2006-01-02"),
 		event.AvailableTickets,
 		event.Price,
 		id,
@@ -71,7 +67,6 @@ func (mysql *MysqlEventRepository) Update(id int, event entities.Event) error {
 	}
 
 	if rowsAffected == 0 {
-		log.Println("No se encontró el evento con ID:", id)
 		return fmt.Errorf("evento con ID %d no encontrado", id)
 	}
 
@@ -88,32 +83,43 @@ func (mysql *MysqlEventRepository) Delete(id int) error {
 }
 
 func (mysql *MysqlEventRepository) FindByID(id int) (entities.Event, error) {
-    var event entities.Event
-    row := mysql.conn.QueryRow("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events WHERE id = ?", id)
+	var event entities.Event
+	var dateStr string
+	
+	row := mysql.conn.QueryRow(
+		"SELECT id, name, location, date, available_tickets, price, created_at FROM events WHERE id = ?", 
+		id,
+	)
 
-    err := row.Scan(
-        &event.ID,
-        &event.Name,
-        &event.Location,
-        &event.Date,
-        &event.AvailableTickets,
-        &event.Price,
-        &event.CreatedAt, // ¡Este faltaba!
-    )
-    if err != nil {
-        if err == sql.ErrNoRows {
-            return entities.Event{}, fmt.Errorf("evento con ID %d no encontrado", id)
-        }
-        return entities.Event{}, err
-    }
+	err := row.Scan(
+		&event.ID,
+		&event.Name,
+		&event.Location,
+		&dateStr,
+		&event.AvailableTickets,
+		&event.Price,
+		&event.CreatedAt,
+	)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return entities.Event{}, fmt.Errorf("evento con ID %d no encontrado", id)
+		}
+		return entities.Event{}, err
+	}
 
-    return event, nil
+	// Parsear la fecha
+	event.Date, _ = time.Parse("2006-01-02", dateStr)
+	return event, nil
 }
+
 func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 	var events []entities.Event
 
-	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events")
-
+	rows, err := mysql.conn.Query(
+		"SELECT id, name, location, date, available_tickets, price, created_at FROM events",
+	)
+	
 	if err != nil {
 		log.Println("Error al obtener todos los eventos:", err)
 		return nil, err
@@ -122,11 +128,13 @@ func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 
 	for rows.Next() {
 		var event entities.Event
+		var dateStr string
+		
 		err := rows.Scan(
 			&event.ID,
 			&event.Name,
 			&event.Location,
-			&event.Date,
+			&dateStr,
 			&event.AvailableTickets,
 			&event.Price,
 			&event.CreatedAt,
@@ -135,12 +143,10 @@ func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 			log.Println("Error al escanear evento:", err)
 			return nil, err
 		}
+		
+		// Parsear la fecha
+		event.Date, _ = time.Parse("2006-01-02", dateStr)
 		events = append(events, event)
-	}
-
-	if err := rows.Err(); err != nil {
-		log.Println("Error después de iterar filas:", err)
-		return nil, err
 	}
 
 	return events, nil
@@ -148,7 +154,12 @@ func (mysql *MysqlEventRepository) GetAll() ([]entities.Event, error) {
 
 func (mysql *MysqlEventRepository) GetByDate(date string) ([]entities.Event, error) {
 	var events []entities.Event
-	rows, err := mysql.conn.Query("SELECT id, name, location, date, available_tickets, price, CreatedAt FROM events WHERE date = ?", date)
+	
+	rows, err := mysql.conn.Query(
+		"SELECT id, name, location, date, available_tickets, price, created_at FROM events WHERE date = ?", 
+		date,
+	)
+	
 	if err != nil {
 		log.Println("Error al obtener eventos por fecha:", err)
 		return nil, err
@@ -157,11 +168,13 @@ func (mysql *MysqlEventRepository) GetByDate(date string) ([]entities.Event, err
 
 	for rows.Next() {
 		var event entities.Event
+		var dateStr string
+		
 		err := rows.Scan(
 			&event.ID,
 			&event.Name,
 			&event.Location,
-			&event.Date,
+			&dateStr,
 			&event.AvailableTickets,
 			&event.Price,
 			&event.CreatedAt,
@@ -170,12 +183,50 @@ func (mysql *MysqlEventRepository) GetByDate(date string) ([]entities.Event, err
 			log.Println("Error al filtrar los eventos:", err)
 			return nil, err
 		}
+		
+		// Parsear la fecha
+		event.Date, _ = time.Parse("2006-01-02", dateStr)
 		events = append(events, event)
 	}
 
-	if err := rows.Err(); err != nil {
-		log.Println("Error al filtrar los eventos:", err)
+	return events, nil
+}
+
+func (mysql *MysqlEventRepository) FindByLocation(location string) ([]entities.Event, error) {
+	var events []entities.Event
+	
+	rows, err := mysql.conn.Query(
+		"SELECT id, name, location, date, available_tickets, price, created_at FROM events WHERE location LIKE ?", 
+		"%"+location+"%",
+	)
+	
+	if err != nil {
+		log.Println("Error al obtener eventos por ubicación:", err)
 		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var event entities.Event
+		var dateStr string
+		
+		err := rows.Scan(
+			&event.ID,
+			&event.Name,
+			&event.Location,
+			&dateStr,
+			&event.AvailableTickets,
+			&event.Price,
+			&event.CreatedAt,
+		)
+		if err != nil {
+			log.Println("Error al filtrar eventos por ubicación:", err)
+			return nil, err
+		}
+		
+		// Parsear la fecha
+		event.Date, _ = time.Parse("2006-01-02", dateStr)
+		events = append(events, event)
 	}
 
 	return events, nil

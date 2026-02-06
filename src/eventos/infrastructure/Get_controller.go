@@ -1,10 +1,10 @@
-//Eventos-Api-Go/src/eventos/infrastructure/Get_controller.go
+// Eventos-Api-Go/src/eventos/infrastructure/Get_controller.go
 package infrastructure
 
 import (
 	"net/http"
 
-	application "Eventos-Api/src/eventos/application"
+	"Eventos-Api/src/eventos/application"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,7 +30,5 @@ func (ctrl *GetEventsByDateController) Run(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"events": events,
-	})
+	c.JSON(http.StatusOK, events)
 }

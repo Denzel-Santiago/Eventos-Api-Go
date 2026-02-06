@@ -1,3 +1,4 @@
+// Eventos-Api-Go/src/eventos/application/ViewAllEvents_UseCase.go
 package application
 
 import (
@@ -6,13 +7,13 @@ import (
 )
 
 type ViewAllEvents struct {
-	db domain.IEvent
+	eventRepo domain.IEvent
 }
 
-func NewViewAllEvents(db domain.IEvent) *ViewAllEvents {
-	return &ViewAllEvents{db: db}
+func NewViewAllEvents(eventRepo domain.IEvent) *ViewAllEvents {
+	return &ViewAllEvents{eventRepo: eventRepo}
 }
 
 func (ve *ViewAllEvents) Execute() ([]entities.Event, error) {
-	return ve.db.GetAll()
+	return ve.eventRepo.GetAll()
 }

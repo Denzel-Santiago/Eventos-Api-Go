@@ -1,4 +1,4 @@
-//Eventos-Api-Go/src/eventos/infrastructure/ViewAllEvents_controller.go
+// Eventos-Api-Go/src/eventos/infrastructure/ViewAllEvents_controller.go
 package infrastructure
 
 import (
@@ -16,10 +16,12 @@ func NewViewAllEventsController(useCase *application.ViewAllEvents) *ViewAllEven
 	return &ViewAllEventsController{useCase: useCase}
 }
 
-func (vuc *ViewAllEventsController) Execute(c *gin.Context) {
-	events, err := vuc.useCase.Execute()
+func (ctrl *ViewAllEventsController) Execute(c *gin.Context) {
+	events, err := ctrl.useCase.Execute()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener los eventos"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error al obtener los eventos",
+		})
 		return
 	}
 

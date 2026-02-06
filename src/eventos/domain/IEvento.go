@@ -6,7 +6,7 @@ import (
 )
 
 type IEvent interface {
-	Save(event entities.Event) error
+	Save(event entities.Event) (entities.Event, error) 
 	Update(id int, event entities.Event) error
 	Delete(id int) error
 	FindByID(id int) (entities.Event, error)
@@ -14,4 +14,3 @@ type IEvent interface {
 	GetByDate(date string) ([]entities.Event, error)
 	FindByLocation(location string) ([]entities.Event, error)
 }
-

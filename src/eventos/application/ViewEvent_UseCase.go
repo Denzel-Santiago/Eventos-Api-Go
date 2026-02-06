@@ -1,3 +1,4 @@
+// Eventos-Api-Go/src/eventos/application/ViewEvent_UseCase.go
 package application
 
 import (
@@ -6,13 +7,13 @@ import (
 )
 
 type ViewEvent struct {
-	db domain.IEvent
+	eventRepo domain.IEvent
 }
 
-func NewViewEvent(db domain.IEvent) *ViewEvent {
-	return &ViewEvent{db: db}
+func NewViewEvent(eventRepo domain.IEvent) *ViewEvent {
+	return &ViewEvent{eventRepo: eventRepo}
 }
 
 func (vu *ViewEvent) Execute(id int) (entities.Event, error) {
-	return vu.db.FindByID(id)
+	return vu.eventRepo.FindByID(id)
 }

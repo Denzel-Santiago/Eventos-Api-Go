@@ -1,10 +1,11 @@
+// Eventos-Api-Go/src/eventos/infrastructure/Deleted_controller.go
 package infrastructure
 
 import (
 	"net/http"
 	"strconv"
 
-	application "Eventos-Api/src/eventos/application"
+	"Eventos-Api/src/eventos/application"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,16 +30,16 @@ func (ctrl *DeleteEventController) Run(c *gin.Context) {
 		return
 	}
 
-	errDelete := ctrl.deleteUseCase.Run(id)
-	if errDelete != nil {
+	err = ctrl.deleteUseCase.Run(id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "No se pudo eliminar el evento",
-			"error":   errDelete.Error(),
+			"message": "Error al eliminar el evento",
+			"error":   err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "Evento eliminado exitosamente",
+		"message": "Evento eliminado exitosamente",
 	})
 }

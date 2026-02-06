@@ -1,4 +1,4 @@
-//Eventos-Api-Go/src/eventos/application/Get_UseCase.go
+// Eventos-Api-Go/src/eventos/application/Get_UseCase.go
 package application
 
 import (
@@ -7,15 +7,15 @@ import (
 )
 
 type GetEventsByDateUseCase struct {
-	db domain.IEvent
+	eventRepo domain.IEvent
 }
 
-func NewGetEventsByDateUseCase(db domain.IEvent) *GetEventsByDateUseCase {
+func NewGetEventsByDateUseCase(eventRepo domain.IEvent) *GetEventsByDateUseCase {
 	return &GetEventsByDateUseCase{
-		db: db,
+		eventRepo: eventRepo,
 	}
 }
 
 func (uc *GetEventsByDateUseCase) Run(date string) ([]entities.Event, error) {
-	return uc.db.GetByDate(date)
+	return uc.eventRepo.GetByDate(date)
 }

@@ -1,4 +1,4 @@
-//Eventos-Api-Go/src/eventos/infrastructure/Create_controller.go
+// Eventos-Api-Go/src/eventos/infrastructure/Create_controller.go
 package infrastructure
 
 import (
@@ -10,38 +10,37 @@ import (
 )
 
 type CreateEventController struct {
-	CreateEventUseCase *application.CreateEventUseCase
+	createEventUseCase *application.CreateEventUseCase
 }
 
 func NewCreateEventController(createEventUseCase *application.CreateEventUseCase) *CreateEventController {
 	return &CreateEventController{
-		CreateEventUseCase: createEventUseCase,
+		createEventUseCase: createEventUseCase, // CORREGIDO: minúscula
 	}
 }
 
 func (ctrl *CreateEventController) Run(c *gin.Context) {
 	var event entities.Event
 
-	if errJSON := c.ShouldBindJSON(&event); errJSON != nil {
+	if err := c.ShouldBindJSON(&event); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Datos del evento inválidos",
-			"error":   errJSON.Error(),
+			"error":   err.Error(),
 		})
 		return
 	}
 
-	eventoCreado, errAdd := ctrl.CreateEventUseCase.Run(&event)
-
-	if errAdd != nil {
+	eventoCreado, err := ctrl.createEventUseCase.Run(event) // CORREGIDO: minúscula
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Error al agregar el evento",
-			"error":   errAdd.Error(),
+			"message": "Error al crear el evento",
+			"error":   err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "El evento ha sido agregado",
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Evento creado exitosamente",
 		"evento":  eventoCreado,
 	})
 }

@@ -1,17 +1,20 @@
+// Eventos-Api-Go/src/eventos/application/DeleteEvent_UseCase.go
 package application
 
-import "Eventos-Api/src/eventos/domain"
+import (
+	"Eventos-Api/src/eventos/domain"
+)
 
 type DeleteEventUseCase struct {
-	db domain.IEvent
+	eventRepo domain.IEvent
 }
 
-func NewDeleteEventUseCase(db domain.IEvent) *DeleteEventUseCase {
+func NewDeleteEventUseCase(eventRepo domain.IEvent) *DeleteEventUseCase {
 	return &DeleteEventUseCase{
-		db: db,
+		eventRepo: eventRepo,
 	}
 }
 
 func (uc *DeleteEventUseCase) Run(id int) error {
-	return uc.db.Delete(id)
+	return uc.eventRepo.Delete(id)
 }
